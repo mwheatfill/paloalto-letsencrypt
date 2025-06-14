@@ -1,0 +1,30 @@
+# .gitignore
+# Environment files
+.env
+*.env
+!.env.example
+
+# Certificate data (sensitive)
+certs/
+config/
+logs/
+
+# Docker volumes
+data/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# Temporary files
+tmp/
+temp/
