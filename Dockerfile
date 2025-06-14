@@ -1,9 +1,21 @@
 FROM ubuntu:22.04
 
-# Avoid interactive prompts during package installation
+# Metadata labels
+LABEL maintainer="michael@wheatfill.com"
+LABEL version="1.0.0"
+LABEL description="Automated Let's Encrypt certificate generation and deployment for Palo Alto Networks firewalls"
+LABEL org.opencontainers.image.title="Palo Alto Let's Encrypt Certificate Manager"
+LABEL org.opencontainers.image.description="Automates Let's Encrypt certificate generation using Cloudflare DNS challenges and deploys them to Palo Alto Networks firewalls via API"
+LABEL org.opencontainers.image.version="1.0.0"
+LABEL org.opencontainers.image.authors="Michael Wheatfill <michael@wheatfill.com>"
+LABEL org.opencontainers.image.url="https://github.com/mwheatfill/paloalto-letsencrypt"
+LABEL org.opencontainers.image.documentation="https://github.com/mwheatfill/paloalto-letsencrypt/blob/main/README.md"
+LABEL org.opencontainers.image.source="https://github.com/mwheatfill/paloalto-letsencrypt"
+LABEL org.opencontainers.image.licenses="MIT"
+
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Update package list and install base packages
+# Update and install packages
 RUN apt-get update && apt-get install -y \
     python3 \
     python3-pip \
@@ -17,14 +29,9 @@ RUN apt-get update && apt-get install -y \
     logrotate \
     && rm -rf /var/lib/apt/lists/*
 
-# Create symlinks only if they don't exist
-RUN [ ! -e /usr/bin/python ] && ln -s /usr/bin/python3 /usr/bin/python || true
-RUN [ ! -e /usr/bin/pip ] && ln -s /usr/bin/pip3 /usr/bin/pip || true
-
 # Install Python packages
-RUN pip install pan-python certbot-dns-cloudflare
+RUN pip3 install pan-python certbot-dns-cloudflare
 
-# Create working directories
 WORKDIR /app
 RUN mkdir -p /app/certs /app/scripts /app/config /app/logs /app/templates
 
@@ -41,12 +48,16 @@ RUN echo "0 3 * * * /app/scripts/renew-and-deploy.sh >> /app/logs/renewal.log 2>
 # Create log rotation config
 RUN echo "/app/logs/*.log {\n    daily\n    rotate 30\n    compress\n    delaycompress\n    missingok\n    create 644 root root\n}" > /etc/logrotate.d/certbot-automation
 
-# Set environment variables with defaults
-ENV DOMAIN=""
-ENV EMAIL=""
-ENV PALO_HOST=""
-ENV PALO_USER=""
-ENV CLOUDFLARE_EMAIL=""
+# Environment variables (non-sensitive only)
+ENV DOMAIN="" \
+    EMAIL="" \
+    PALO_HOST="" \
+    PALO_USER="" \
+    CLOUDFLARE_EMAIL=""
 
-# Keep container running and start cron
-CMD ["sh", "-c", "cron && tail -f /dev/null"] 
+# Health check
+HEALTHCHECK --interval=24h --timeout=30s --start-period=5m --retries=3 \
+  CMD /app/scripts/cert-health-check.sh || exit 1
+
+# Use JSON format for CMD to handle signals properly
+CMD ["sh", "-c", "cron && tail -f /dev/null"]
