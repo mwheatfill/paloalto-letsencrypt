@@ -4,19 +4,18 @@ name: Trigger auto deployment for paloalto-letsencrypt
 on:
   # Automatically trigger it when detected changes in repo
   push:
-    branches: 
-      [ main ]
+    branches: [main]
     paths:
-    - '**'
-    - '.github/workflows/paloalto-letsencrypt-AutoDeployTrigger-957f1d99-57c6-4c10-a127-f7e5b49c5337.yml'
+      - "**"
+      - ".github/workflows/paloalto-letsencrypt-AutoDeployTrigger-957f1d99-57c6-4c10-a127-f7e5b49c5337.yml"
 
-  # Allow manual trigger 
-  workflow_dispatch:      
+  # Allow manual trigger
+  workflow_dispatch:
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    permissions: 
+    permissions:
       id-token: write #This is required for requesting the OIDC JWT Token
       contents: read #Required when GH token is used to authenticate with private repo
 
@@ -35,12 +34,10 @@ jobs:
         uses: azure/container-apps-deploy-action@v2
         with:
           appSourcePath: ${{ github.workspace }}
-          dockerfilePath: './Dockerfile''
+          dockerfilePath: "./Dockerfile"
           registryUrl: mwheatfill.azurecr.io
           registryUsername: ${{ secrets.PALOALTOLETSENCRYPT_REGISTRY_USERNAME }}
           registryPassword: ${{ secrets.PALOALTOLETSENCRYPT_REGISTRY_PASSWORD }}
           containerAppName: paloalto-letsencrypt
           resourceGroup: rg-containers
           imageToBuild: mwheatfill.azurecr.io/paloalto-letsencrypt:${{ github.sha }}
-
-
