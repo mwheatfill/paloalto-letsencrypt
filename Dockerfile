@@ -33,11 +33,10 @@ RUN apt-get update && apt-get install -y \
 RUN pip3 install pan-python certbot-dns-cloudflare
 
 WORKDIR /app
-RUN mkdir -p /app/certs /app/scripts /app/config /app/logs /app/templates
+RUN mkdir -p /app/certs /app/scripts /app/config /app/logs
 
 # Copy automation scripts into the container
 COPY scripts/ /app/scripts/
-COPY templates/ /app/templates/
 
 # Make scripts executable
 RUN chmod +x /app/scripts/*.sh
