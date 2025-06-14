@@ -46,9 +46,7 @@ ENV DOMAIN=""
 ENV EMAIL=""
 ENV PALO_HOST=""
 ENV PALO_USER=""
-ENV PALO_PASS=""
 ENV CLOUDFLARE_EMAIL=""
-ENV CLOUDFLARE_API_KEY=""
 
 # Keep container running and start cron
-CMD cron && tail -f /dev/null
+CMD ["sh", "-c", "cron && tail -f /dev/null"] 
