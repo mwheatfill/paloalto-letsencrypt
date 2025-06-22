@@ -1,17 +1,11 @@
 services:
   palo-certs:
     build: .
+    image: paloalto-letsencrypt:latest
     container_name: palo-certs
+    env_file: .env
     volumes:
       - ./certs:/app/certs
       - ./config:/app/config
       - ./logs:/app/logs
-    environment:
-      - DOMAIN=${DOMAIN}
-      - EMAIL=${EMAIL}
-      - CLOUDFLARE_EMAIL=${CLOUDFLARE_EMAIL}
-      - CLOUDFLARE_API_KEY=${CLOUDFLARE_API_KEY}
-      - PALO_HOST=${PALO_HOST}
-      - PALO_USER=${PALO_USER}
-      - PALO_PASS=${PALO_PASS}
     restart: unless-stopped
